@@ -144,7 +144,7 @@ func (d *device) StopAdvertising() error {
 
 func (d *device) Stop() error {
 	// No Implementation
-
+	return errors.New("FIXME: Advertise error")
 }
 
 func (d *device) RemoveAllServices() error {
