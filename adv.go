@@ -73,6 +73,7 @@ type Advertisement struct {
 	TxPowerLevel     int
 	Connectable      bool
 	SolicitedService []UUID
+	Raw              []byte
 }
 
 // This is only used in Linux port.
@@ -103,6 +104,8 @@ func (a *Advertisement) unmarshall(b []byte) error {
 		}
 
 		d := b[2 : 1+l]
+		a.Raw = d
+
 		switch t {
 		case typeFlags:
 			// TODO: should we do anything about the discoverability here?
