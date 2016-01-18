@@ -66,6 +66,10 @@ func (u UUID) String() string {
 	return fmt.Sprintf("%x", reverse(u.b))
 }
 
+func (u UUID) Bytes() []byte {
+	return u.b
+}
+
 // Equal returns a boolean reporting whether v represent the same UUID as u.
 func (u UUID) Equal(v UUID) bool {
 	return bytes.Equal(u.b, v.b)
