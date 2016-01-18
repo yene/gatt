@@ -8,6 +8,7 @@ import (
 
 	"github.com/currantlabs/gatt/linux/cmd"
 	"github.com/currantlabs/gatt/linux/evt"
+	"github.com/currantlabs/gatt/linux/util"
 )
 
 type HCI struct {
@@ -24,6 +25,8 @@ type HCI struct {
 
 	bufCnt  chan struct{}
 	bufSize int
+
+	pool *util.BytePool
 
 	maxConn int
 	connsmu *sync.Mutex
@@ -64,6 +67,8 @@ func NewHCI(devID int, chk bool, maxConn int) (*HCI, error) {
 
 		bufCnt:  make(chan struct{}, 15-1),
 		bufSize: 27,
+
+		pool: util.NewBytePool(4096, 16),
 
 		maxConn: maxConn,
 		connsmu: &sync.Mutex{},
@@ -161,24 +166,26 @@ func btoi(b bool) uint8 {
 }
 
 func (h *HCI) mainLoop() {
-	b := make([]byte, 4096)
 	for {
+		b := h.pool.Get()
 		n, err := h.d.Read(b)
 		if err != nil {
+			fmt.Sprintf("mainloop err: %v\n", err)
 			return
 		}
 		if n == 0 {
+			println("mainLoop failed to read")
 			return
 		}
-		p := make([]byte, n)
-		copy(p, b)
-		h.handlePacket(p)
+		h.handlePacket(b, n)
 	}
 }
 
-func (h *HCI) handlePacket(b []byte) {
+func (h *HCI) handlePacket(buf []byte, n int) {
+	b := buf[:n]
 	t, b := packetType(b[0]), b[1:]
 	var err error
+	handled := true
 	switch t {
 	case typCommandPkt:
 		op := uint16(b[0]) | uint16(b[1])<<8
@@ -188,11 +195,13 @@ func (h *HCI) handlePacket(b []byte) {
 	case typSCODataPkt:
 		err = fmt.Errorf("SCO packet not supported")
 	case typEventPkt:
+		handled = false
 		go func() {
 			err := h.e.Dispatch(b)
 			if err != nil {
 				log.Printf("hci: %s, [ % X]", err, b)
 			}
+			h.pool.Put(buf)
 		}()
 	case typVendorPkt:
 		err = fmt.Errorf("Vendor packet not supported")
@@ -201,6 +210,9 @@ func (h *HCI) handlePacket(b []byte) {
 	}
 	if err != nil {
 		log.Printf("hci: %s, [ % X]", err, b)
+	}
+	if handled {
+		h.pool.Put(buf)
 	}
 }
 
