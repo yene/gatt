@@ -134,8 +134,12 @@ func (a *Advertisement) unmarshall(b []byte) error {
 		case typeServiceSol32:
 			a.SolicitedService = uuidList(a.SolicitedService, d, 4)
 		case typeManufacturerData:
-			a.ManufacturerData = make([]byte, len(d))
-			copy(a.ManufacturerData, d)
+			if a.ManufacturerData != nil {
+				// ignore additional manufacturer data
+			} else {
+				a.ManufacturerData = make([]byte, len(d))
+				copy(a.ManufacturerData, d)
+			}
 		case typeServiceData16:
 			a.ServiceData = serviceDataList(a.ServiceData, d, 2)
 		case typeServiceData32:
