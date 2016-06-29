@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"errors"
 
-	"github.com/currantlabs/gatt/linux/util"
+	"github.com/yene/gatt/linux/util"
 )
 
 type EventHandler interface {

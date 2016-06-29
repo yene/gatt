@@ -10,7 +10,7 @@ import (
 	"net"
 	"strings"
 
-	"github.com/currantlabs/gatt/linux"
+	"github.com/yene/gatt/linux"
 )
 
 type peripheral struct {

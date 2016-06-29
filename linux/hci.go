@@ -6,9 +6,9 @@ import (
 	"log"
 	"sync"
 
-	"github.com/currantlabs/gatt/linux/cmd"
-	"github.com/currantlabs/gatt/linux/evt"
-	"github.com/currantlabs/gatt/linux/util"
+	"github.com/yene/gatt/linux/cmd"
+	"github.com/yene/gatt/linux/evt"
+	"github.com/yene/gatt/linux/util"
 )
 
 type HCI struct {
